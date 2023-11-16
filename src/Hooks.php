@@ -7,9 +7,11 @@ use JobQueueGroup;
 use SMW\Options;
 use SMW\Services\ServicesFactory as ApplicationFactory;
 use SMWDIBlob;
+use SMWDIWikiPage;
 use SMWQueryProcessor;
 use SMWSemanticData;
 use SMWStore;
+use Title;
 use WikiPage;
 
 class Hooks {
@@ -22,6 +24,12 @@ class Hooks {
 				if ( !defined( 'SMW_VERSION' ) ) {
 						die( "ERROR: Semantic MediaWiki must be installed for Semantic Dependency Updater to run!" );
 				}
+		}
+
+		public static function onBeforeDeleteSubjectComplete( SMWStore $store, Title $title ) {
+				$diWikiPage = SMWDIWikiPage::newFromTitle( $title );
+				$smwData = $store->getSemanticData( $diWikiPage );
+				self::onAfterDataUpdateComplete( $store, $smwData, null );
 		}
 
 		public static function onAfterDataUpdateComplete(
@@ -53,18 +61,21 @@ class Hooks {
 						return true;
 				}
 
-				$diffTable = $compositePropertyTableDiffIterator->getOrderedDiffByTable();
+				if ( $compositePropertyTableDiffIterator !== null ) {
+					$diffTable = $compositePropertyTableDiffIterator->getOrderedDiffByTable();
 
-				// SECOND CHECK: Have there been actual changes in the data? (Ignore internal SMW data!)
-				// TODO: Introduce an explicit list of Semantic Properties to watch ?
-				unset( $diffTable['smw_fpt_mdat'] ); // Ignore SMW's internal properties "smw_fpt_mdat"
+					// SECOND CHECK: Have there been actual changes in the data? (Ignore internal SMW data!)
+					// TODO: Introduce an explicit list of Semantic Properties to watch ?
+					unset( $diffTable['smw_fpt_mdat'] ); // Ignore SMW's internal properties "smw_fpt_mdat"
 
-				if ( count( $diffTable ) > 0 ) {
+					if ( count( $diffTable ) > 0 ) {
 						// wfDebugLog('SemanticDependencyUpdater', "[SDU] diffTable: " . print_r($diffTable, true));
 						wfDebugLog( 'SemanticDependencyUpdater', "[SDU] -----> Data changes detected" );
-				} else {
+					} else {
 						wfDebugLog( 'SemanticDependencyUpdater', "[SDU] <-- No semantic data changes detected" );
+
 						return true;
+					}
 				}
 
 				// THIRD CHECK: Has this page been already traversed more than twice?
