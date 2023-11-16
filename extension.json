@@ -1,37 +1,40 @@
 {
-  "name": "SemanticDependencyUpdater",
-  "version": "2.1.0",
-  "author": [
-    "Simon Heimler (gesinn.it GmbH & Co. KG)",
-    "Alexander Gesinn (gesinn.it GmbH & Co. KG)",
-    "Sebastian Schmid (gesinn.it GmbH & Co. KG)",
-    "Rcdeboer Remco C. de Boer"
-  ],
-  "url": "https://www.mediawiki.org/wiki/Extension:SemanticDependencyUpdater",
-  "description": "Monitors semantic data changes and updates dependent pages",
-  "license-name": "MIT",
-  "type": "semantic",
-  "requires": {
-    "MediaWiki": ">= 1.31",
-    "extensions": {
-      "SemanticMediaWiki": ">= 3.1.0"
-    }
-  },
-  "AutoloadNamespaces": {
-    "SDU\\": "src/"
-  },
-  "Hooks": {
-    "SMW::SQLStore::AfterDataUpdateComplete": [
-      "SDU\\Hooks::onAfterDataUpdateComplete"
-    ]
-  },
-  "JobClasses": {
-    "DummyEditJob": "SDU\\DummyEditJob"
-  },
-  "callback": "SDU\\Hooks::setup",
-  "config": {
-    "SDUProperty": "Semantic Dependency",
-    "SDUUseJobQueue": false
-  },
-  "manifest_version": 1
+	"name": "SemanticDependencyUpdater",
+	"version": "2.1.0",
+	"author": [
+		"Simon Heimler (gesinn.it GmbH & Co. KG)",
+		"Alexander Gesinn (gesinn.it GmbH & Co. KG)",
+		"Sebastian Schmid (gesinn.it GmbH & Co. KG)",
+		"Rcdeboer Remco C. de Boer"
+	],
+	"url": "https://www.mediawiki.org/wiki/Extension:SemanticDependencyUpdater",
+	"description": "Monitors semantic data changes and updates dependent pages",
+	"license-name": "MIT",
+	"type": "semantic",
+	"requires": {
+		"MediaWiki": ">= 1.31",
+		"extensions": {
+			"SemanticMediaWiki": ">= 3.1.0"
+		}
+	},
+	"AutoloadNamespaces": {
+		"SDU\\": "src/"
+	},
+	"Hooks": {
+		"SMW::SQLStore::AfterDataUpdateComplete": [
+			"SDU\\Hooks::onAfterDataUpdateComplete"
+		],
+		"SMW::SQLStore::BeforeDeleteSubjectComplete": [
+			"SDU\\Hooks::onBeforeDeleteSubjectComplete"
+		]
+	},
+	"JobClasses": {
+		"DummyEditJob": "SDU\\DummyEditJob"
+	},
+	"callback": "SDU\\Hooks::setup",
+	"config": {
+		"SDUProperty": "Semantic Dependency",
+		"SDUUseJobQueue": false
+	},
+	"manifest_version": 1
 }
