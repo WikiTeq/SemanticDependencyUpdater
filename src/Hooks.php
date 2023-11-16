@@ -4,6 +4,8 @@ namespace SDU;
 
 use DeferredUpdates;
 use JobQueueGroup;
+use MediaWiki\MediaWikiServices;
+use MediaWiki\Page\WikiPageFactory;
 use SMW\Options;
 use SMW\Services\ServicesFactory as ApplicationFactory;
 use SMWDIBlob;
@@ -26,8 +28,11 @@ class Hooks {
 				}
 		}
 
-		public static function onBeforeDeleteSubjectComplete( SMWStore $store, Title $title ) {
-				$diWikiPage = SMWDIWikiPage::newFromTitle( $title );
+		// Note: at the time SMW::SQLStore::BeforeDeleteSubjectComplete fires there is no data already
+		// so the PageDelete hook is used
+		public static function onPageDelete( $page, $deleter, string $reason, $status, bool $suppress ) {
+				$store = smwfGetStore();
+				$diWikiPage = SMWDIWikiPage::newFromTitle( Title::newFromDBkey( $page->getDBkey() ) );
 				$smwData = $store->getSemanticData( $diWikiPage );
 				self::onAfterDataUpdateComplete( $store, $smwData, null );
 		}
@@ -153,12 +158,12 @@ class Hooks {
 
 				$pageArray = [];
 				foreach ( $wikiPageValues as $wikiPageValue ) {
-						$page = WikiPage::newFromID( $wikiPageValue->getTitle()->getArticleId() );
+						$page = MediaWikiServices::getInstance()->getWikiPageFactory()->newFromID( $wikiPageValue->getTitle()->getArticleId() );
 						if ( $page ) {
-								$pageArray[] = $page->getTitle()->prefixedText;
+								$pageArray[] = $page->getTitle()->getPrefixedText();
 						}
 				}
-				$pageString = implode( $pageArray, "|" );
+				$pageString = implode( "|", $pageArray );
 
 				// TODO: A threshold when to switch to Queue Jobs might be smarter
 
@@ -186,6 +191,10 @@ class Hooks {
 												new Options( [ 'page' => $pageString ] )
 										);
 										$dataRebuilder->rebuild();
+										foreach ( explode( '|', $pageString ) as $wikipage ) {
+												$wikipage = new WikiPage( Title::newFromText( $pageString ) );
+												$wikipage->doPurge();
+										}
 								} );
 						}
 				}
