@@ -26,8 +26,11 @@ class Hooks {
 		}
 	}
 
-	public static function onBeforeDeleteSubjectComplete( SMWStore $store, Title $title ) {
-			$diWikiPage = SMWDIWikiPage::newFromTitle( $title );
+	// Note: at the time SMW::SQLStore::BeforeDeleteSubjectComplete fires there is no data already
+	// so the PageDelete hook is used
+	public static function onPageDelete( $page, $deleter, string $reason, $status, bool $suppress ) {
+			$store = smwfGetStore();
+			$diWikiPage = SMWDIWikiPage::newFromTitle( Title::newFromDBkey( $page->getDBkey() ) );
 			$smwData = $store->getSemanticData( $diWikiPage );
 			self::onAfterDataUpdateComplete( $store, $smwData, null );
 	}
