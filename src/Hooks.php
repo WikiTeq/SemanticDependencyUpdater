@@ -65,8 +65,8 @@ class Hooks {
 		if ( count( $diffTable ) > 0 ) {
 			wfDebugLog( 'SemanticDependencyUpdater', "[SDU] -----> Data changes detected" );
 
-			foreach ( $diffTable as $key => $value ) {
-				if ( strpos( $key, 'smw_di' ) === 0 && is_array( $value ) ) {
+			foreach ( $diffTable as $value ) {
+				if ( is_array( $value ) && isset( $value["insert"] ) ) {
 					foreach ( $value["insert"] as $insert ) {
 						if ( $insert["s_id"] == $smwSID ) {
 							if ( $insert["p_id"] != 506 ) {
